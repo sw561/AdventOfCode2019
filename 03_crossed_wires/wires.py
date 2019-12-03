@@ -2,18 +2,11 @@
 
 from collections import defaultdict
 
-class DistanceFunc:
-    def __init__(self, distance, ref):
-        self.distance = distance
-        self.ref = ref
+def distance(d, pos, x, y):
+    return d + abs(pos[0] - x) + abs(pos[1] - y)
 
-class HorizontalDist(DistanceFunc):
-    def __call__(self, x, y):
-        return self.distance + abs(x - self.ref)
-
-class VerticalDist(DistanceFunc):
-    def __call__(self, x, y):
-        return self.distance + abs(y - self.ref)
+HORIZONTAL = 0
+VERTICAL = 1
 
 def segments(steps):
     # Generate a sequence of line segments
@@ -23,16 +16,16 @@ def segments(steps):
         direction, length = step[0], int(step[1:])
         if direction == 'R':
             new_pos = (pos[0] + length, pos[1])
-            segment = 'H', pos[1], (pos[0], new_pos[0]), HorizontalDist(distance, pos[0])
+            segment = HORIZONTAL, pos[1], (pos[0], new_pos[0]), distance, pos
         elif direction == 'L':
             new_pos = (pos[0] - length, pos[1])
-            segment = 'H', pos[1], (new_pos[0], pos[0]), HorizontalDist(distance, pos[0]) 
+            segment = HORIZONTAL, pos[1], (new_pos[0], pos[0]), distance, pos
         elif direction == 'U':
             new_pos = (pos[0], pos[1] + length)
-            segment = 'V', pos[0], (pos[1], new_pos[1]), VerticalDist(distance, pos[1])
+            segment = VERTICAL, pos[0], (pos[1], new_pos[1]), distance, pos
         elif direction == 'D':
             new_pos = (pos[0], pos[1] - length)
-            segment = 'V', pos[0], (new_pos[1], pos[1]), VerticalDist(distance, pos[1])
+            segment = VERTICAL, pos[0], (new_pos[1], pos[1]), distance, pos
 
         yield segment
         pos = new_pos
@@ -40,40 +33,34 @@ def segments(steps):
 
 def segment_database(it):
     # it is an iterator which returns segments
-    horizontal = defaultdict(list)
-    vertical = defaultdict(list)
-    for d, fixed, seg, distance_func in it:
-        if d == 'H':
-            horizontal[fixed].append((seg, distance_func))
-        else: # d == 'V'
-            vertical[fixed].append((seg, distance_func))
+    database = defaultdict(list)
+    for d, fixed, seg, distance, pos in it:
+        database[(d, fixed)].append((seg, distance, pos))
 
-    return horizontal, vertical
+    return database
 
-def intersections(horizontal, vertical, segment):
-    d, fixed, (start, end), distance_func = segment
-    if d == 'H':
-        # horizontal, check for intersections with database for vertical segments
-        for x in range(start, end+1):
-            for (s, e), d_func in vertical[x]:
-                if s <= fixed <= e:
-                    yield (x, fixed), distance_func(x, fixed), d_func(x, fixed)
+def intersections(database, segment):
+    d, fixed, (start, end), d1, p1 = segment
 
-    else: # d == 'V'
-        # vertical, check for intersections with database for horizontal segments
-        for y in range(start, end+1):
-            for (s, e), d_func in horizontal[y]:
-                if s <= fixed <= e:
-                    yield (fixed, y), distance_func(fixed, y), d_func(fixed, y)
-
+    for iter_index in range(start, end+1):
+        # Get database segments in opposite orientation
+        for (s, e), d2, p2 in database[(1-d, iter_index)]:
+            if s <= fixed <= e:
+                if d is HORIZONTAL:
+                    x, y = iter_index, fixed
+                else:
+                    x, y = fixed, iter_index
+                yield ((x, y),
+                    distance(d1, p1, x, y),
+                    distance(d2, p2, x, y))
 
 def solve(a, b):
-    h, v = segment_database(segments(a))
+    database = segment_database(segments(a))
 
     min_manhattan = None
     min_delay = None
     for segment in segments(b):
-        for intersection, d1, d2 in intersections(h, v, segment):
+        for intersection, d1, d2 in intersections(database, segment):
             manhattan = sum(map(abs, intersection))
             delay = d1 + d2
 
