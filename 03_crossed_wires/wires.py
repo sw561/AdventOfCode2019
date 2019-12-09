@@ -67,8 +67,6 @@ def solve(a, b):
             if manhattan == 0:
                 continue
 
-            print(intersection, d1, d2)
-
             if min_manhattan is None or manhattan < min_manhattan:
                 min_manhattan = manhattan
 
