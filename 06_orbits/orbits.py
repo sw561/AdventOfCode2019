@@ -46,7 +46,7 @@ def processInput(fname):
     parents = dict()
     with open(fname, 'r') as f:
         for line in f:
-            parent, child = (x for x in line.strip().split(')'))
+            parent, child = line.strip().split(')')
             children[parent].append(child)
             parents[child] = parent
 

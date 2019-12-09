@@ -12,7 +12,6 @@ def assertEqual(x, y):
 with open("05_program_test/input.txt", 'r') as f:
     prog = [int(x) for x in f.read().split(',')]
 out = solve(prog, 1)
-print(out)
 for j in out[:-1]:
     assertEqual(j, 0)
 

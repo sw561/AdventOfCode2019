@@ -15,15 +15,18 @@ def part1(layers):
     return best[1] * best[2]
 
 def part2(layers):
+    s = [[]]
     n, height, width = np.shape(layers)
     for h in range(height):
         for w in range(width):
-            x = next(dropwhile(lambda x: x==2, layers[:,h,w])) 
-            print('@' if x else ' ', end='')
-        print()
+            x = next(dropwhile(lambda x: x==2, layers[:,h,w]))
+            s[-1].append(x)
+        s.append([])
+    s.pop()
+    return s
 
 if __name__=="__main__":
-    
+
     with open("08_space_image/input.txt", 'r') as f:
         data = np.array([int(x) for x in f.read().strip()])
 
@@ -31,4 +34,5 @@ if __name__=="__main__":
 
     print(part1(layers))
 
-    part2(layers)
+    print("\n".join("".join('@@' if x else '  ' for x in row)\
+        for row in part2(layers)))
