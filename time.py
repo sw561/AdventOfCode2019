@@ -12,7 +12,7 @@ def run_and_time(command):
 day = 0
 total = timedelta()
 for line in open("run_tests.sh", 'r'):
-    if line[0] == '#':
+    if line[0] == '#' or 'diff' not in line:
         continue
     day += 1
     duration = run_and_time(line.strip())
