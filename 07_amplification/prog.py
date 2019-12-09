@@ -23,8 +23,7 @@ def read(prog, val, mode):
     else:
         raise Exception("unrecognized mode")
 
-def run(prog, my_input=None):
-    p = 0
+def run(prog, p=0, inp=None):
     while True:
         op, mode1, mode2, mode3 = decouple(prog[p])
 
@@ -46,16 +45,18 @@ def run(prog, my_input=None):
             p += 4
 
         elif op == 3:
-            if my_input is None:
-                prog[prog[p+1]] = int(input("Please input\n"))
+            if inp == None:
+                # Need to wait for input
+                return 'WAIT', (prog, p), None
             else:
-                prog[prog[p+1]] = next(my_input)
+                prog[prog[p+1]] = inp
+                inp = None
             p += 2
 
         elif op == 4:
             a = read(prog, prog[p+1], mode1)
-            yield a
             p += 2
+            return 'OUT', (prog, p), a
 
         elif op in [5, 6]:
             a = read(prog, prog[p+1], mode1)
@@ -66,32 +67,77 @@ def run(prog, my_input=None):
                 p += 3
 
         elif op == 99:
-            break
+            return 'EXIT', (None, None), None
 
         else:
             raise Exception("Unrecognized op code: {}".format(op))
 
-def amplify(prog, phase_setting, inp):
-    def input_g():
-        yield phase_setting
-        yield inp
+class ProgramInstance:
+    def __init__(self, prog):
+        self.prog = copy(prog)
+        self.p = 0
+        self.status = 'READY'
 
-    out = next(run(prog, my_input=input_g()))
-    return out
+    def run(self, inp=None):
+        # Run until requires input or exits, returns any output values produced
+        out = []
+
+        assert (self.status == 'READY') or (self.status == 'WAIT' and inp is not None)
+
+        while True:
+            self.status, (self.prog, self.p), o = run(self.prog, self.p, inp)
+            inp = None
+
+            if self.status == 'OUT':
+                out.append(o)
+
+            if self.status in ['WAIT', 'EXIT']:
+                return out
+
+    def __str__(self):
+        return self.status
 
 def simulate(prog, phase_settings):
 
+    amp = [ProgramInstance(prog) for i in range(5)]
+
+    for a, ps in zip(amp, phase_settings):
+        a.run(ps)
+
     value = 0
-    for amp in range(5):
-        value = amplify(copy(prog), phase_settings[amp], value)
+    for a in amp:
+        x = a.run(value)
+        assert len(x) == 1
+        value = x[0]
+
+    return value
+
+def simulate_feedback(prog, phase_settings):
+
+    amp = [ProgramInstance(prog) for i in range(5)]
+
+    for a, ps in zip(amp, phase_settings):
+        a.run(ps)
+
+    value = 0
+    while amp[0].status == 'WAIT':
+        for a in amp:
+            x = a.run(value)
+            assert len(x) == 1
+            value = x[0]
 
     return value
 
 def solve(prog):
     return max(simulate(prog, ps) for ps in permutations(range(5)))
 
+def part2(prog):
+    return max(simulate_feedback(prog, ps) for ps in permutations(range(5, 10)))
+
 if __name__=="__main__":
     with open("07_amplification/input.txt", 'r') as f:
         prog = [int(x) for x in f.read().split(',')]
 
     print(solve(prog))
+
+    print(part2(prog))
