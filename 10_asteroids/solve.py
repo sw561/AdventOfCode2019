@@ -1,21 +1,15 @@
 #!/usr/bin/env python3
 
-from collections import Counter
-from math import atan2
+from math import atan2, gcd
 
 def get_positions(m):
     positions = [] # id -> (x, y) coords
     for y in range(len(m)):
-        for x in range(len(m[0])):
+        for x in range(len(m[y])):
             if m[y][x] == '#':
                 positions.append((x, y))
 
     return positions
-
-def gcd(a, b):
-    while b != 0:
-        a, b = b, a%b 
-    return a
 
 def los_array(m, positions):
     # los[i][j] is number of asteroids between the ith and jth asteroid
@@ -41,11 +35,14 @@ def los_array(m, positions):
     return los
 
 def part1(positions, los):
-    count, id_max = max((Counter(los[i])[0], i) for i in range(len(positions)))
+    count, id_max = max((sum(x==0 for x in los[i]), i) for i in range(len(positions)))
     return count, id_max
 
 def part2(positions, los, id_max):
-    # Sort based on layer and atan2 second. Need -atan2 because angles look like:
+    # Sort based on layer first and -atan2(x, y) second.
+    # Need -atan2 because angles look like:
+    #
+    #            atan2(0, -1) = pi
     #
     #                    |
     #    atan2 = -3pi/4  |  atan2 = 3pi/4
