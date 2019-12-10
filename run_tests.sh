@@ -16,3 +16,5 @@
 ./08_space_image/test.py
 ./09_boost/prog.py | diff 09_boost/output.txt -
 ./09_boost/test.py
+./10_asteroids/solve.py | diff 10_asteroids/output.txt -
+./10_asteroids/test.py
