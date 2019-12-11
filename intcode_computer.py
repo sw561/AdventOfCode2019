@@ -36,9 +36,12 @@ def read_pointer(prog, relative_base, val, mode):
         prog += [0]*max(len(prog)//2, ret-len(prog)+1)
     return ret
 
+LOG = False
+
 def run(prog, p=0, relative_base=0, inp=None):
     out = []
     while True:
+        # print("COMMAND:", prog[p])
         op, mode1, mode2, mode3 = decouple(prog[p])
 
         if op in [1,2,7,8]:
@@ -56,6 +59,11 @@ def run(prog, p=0, relative_base=0, inp=None):
                 prog[ret_pointer] = int(a == b)
             else:
                 raise Exception("HELP: op = {} not handled".format(op))
+
+            if LOG:
+                print("{} ({}:{}) ({}:{}) {}: Writing {} to {}".format(
+                    prog[p], prog[p+1], a, prog[p+2], b, prog[p+3], prog[ret_pointer], ret_pointer))
+
             p += 4
 
         elif op == 3:
@@ -66,24 +74,41 @@ def run(prog, p=0, relative_base=0, inp=None):
                 write_pointer = read_pointer(prog, relative_base, prog[p+1], mode1)
                 prog[write_pointer] = inp
                 inp = None
+            if LOG:
+                print("Input: Writing {} to {}".format(
+                    prog[write_pointer], write_pointer))
             p += 2
 
         elif op == 4:
             a = read(prog, relative_base, prog[p+1], mode1)
             out.append(a)
+            if LOG:
+                print("{} ({}:{}) Output {}".format(
+                    prog[p], prog[p+1], a, a))
             p += 2
 
         elif op in [5, 6]:
             a = read(prog, relative_base, prog[p+1], mode1)
             b = read(prog, relative_base, prog[p+2], mode2)
+            if LOG:
+                old_p = p
             if (op==5 and a) or (op==6 and not a):
                 p = b
             else:
                 p += 3
 
+            if LOG:
+                print("{} ({}:{}) ({}:{}): Jump to {}".format(
+                    prog[old_p], prog[old_p+1], a, prog[old_p+2], b, p))
+
         elif op == 9:
             a = read(prog, relative_base, prog[p+1], mode1)
             relative_base += a
+
+            if LOG:
+                print("{} ({}:{}): New relative base {}".format(
+                    prog[p], prog[p+1], a, relative_base))
+
             p += 2
 
         elif op == 99:
