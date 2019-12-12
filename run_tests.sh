@@ -19,3 +19,5 @@
 ./10_asteroids/solve.py | diff 10_asteroids/output.txt -
 ./10_asteroids/test.py
 ./11_robot/solve.py | diff 11_robot/output.txt -
+./12_three_body/solve.py | diff 12_three_body/output.txt -
+./12_three_body/test.py
