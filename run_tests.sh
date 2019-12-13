@@ -21,3 +21,4 @@
 ./11_robot/solve.py | diff 11_robot/output.txt -
 ./12_three_body/solve.py | diff 12_three_body/output.txt -
 ./12_three_body/test.py
+./13_arcade/solve.py | diff 13_arcade/output.txt -

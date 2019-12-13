@@ -21,6 +21,14 @@ def part1(prog):
     count_blocks = Counter(v for k, v in d.items())
     return count_blocks[2]
 
+def calculate_input(ball_position, paddle_position):
+    if ball_position[0] > paddle_position[0]:
+        return 'l'
+    elif ball_position[0] < paddle_position[0]:
+        return 'h'
+    else:
+        return ' '
+
 def run_game(prog):
     p = ProgramInstance(prog)
     d = dict() # display dict
@@ -34,12 +42,19 @@ def run_game(prog):
             y = o[i+1]
             tile_id = o[i+2]
             d[(x, y)] = tile_id
+            if tile_id == 4:
+                ball_position = (x, y)
+            elif tile_id == 3:
+                paddle_position = (x, y)
 
-        display(d)
+        # display(d)
 
         if p.status == 'WAIT':
-            inp = input("Move joystick")
+            # inp = input("Move joystick")
+            inp = calculate_input(ball_position, paddle_position)
             inp = keypress_map.get(inp, 0)
+
+    return d[(-1, 0)]
 
 character_map = {
     0: ' ',
@@ -71,4 +86,4 @@ if __name__=="__main__":
 
     prog[0] = 2
 
-    run_game(prog)
+    print(run_game(prog))
