@@ -28,8 +28,6 @@ def process_input(f):
             products[x].append(p)
             reactions[p][1][x] = int(n)
 
-        # print(reac, prod)
-
     return reactants, products, reactions
 
 def calculate_priorities(reactants, products):
@@ -44,12 +42,13 @@ def calculate_priorities(reactants, products):
             reactants[p].remove(done)
 
             if not reactants[p]:
+                # We now have all the ingredients to produce p
                 q.append(p)
                 priorities.append(p)
 
     return priorities
 
-def solve(priorities, reactions):
+def solve(priorities, reactions, n_fuel=1, part2=False):
     # We want to start with n ore and end with 1 fuel and some left over
     # materials.
     #
@@ -57,8 +56,7 @@ def solve(priorities, reactions):
     # end up with negative or zero amounts of everything except ORE.
 
     amounts = defaultdict(int)
-    amounts['FUEL'] = 1
-    # print(amounts)
+    amounts['FUEL'] = n_fuel
 
     for chemical in reversed(priorities):
         # we have amounts[chemical]
@@ -68,20 +66,27 @@ def solve(priorities, reactions):
         n, reactants = reactions[chemical]
 
         # Number of times we will need to run reaction
-        k = ceil(amounts[chemical] / n)
+        if not part2:
+            k = ceil(amounts[chemical] / n)
+        else:
+            k = amounts[chemical] / n
 
         amounts[chemical] -= n * k
         for r, rn in reactants.items():
             amounts[r] += rn * k
 
-        print("{} {} {} carried out {} times".format(n, chemical, reactants, k))
-        # print(amounts)
+        # print("{} {} {} carried out {} times".format(n, chemical, reactants, k))
 
-    return amounts['ORE']
+    if not part2:
+        return amounts['ORE']
+
+    return int(1e12 / amounts['ORE'])
 
 if __name__=="__main__":
     with open("14_chemicals/input.txt", 'r') as f:
         reactants, products, reactions = process_input(f)
 
     p = calculate_priorities(reactants, products)
+
     print(solve(p, reactions))
+    print(solve(p, reactions, part2=True))

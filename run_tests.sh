@@ -22,3 +22,5 @@
 ./12_three_body/solve.py | diff 12_three_body/output.txt -
 ./12_three_body/test.py
 ./13_arcade/solve.py | diff 13_arcade/output.txt -
+./14_chemicals/solve.py | diff 14_chemicals/output.txt -
+./14_chemicals/test.py
