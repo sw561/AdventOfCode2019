@@ -24,3 +24,4 @@
 ./13_arcade/solve.py | diff 13_arcade/output.txt -
 ./14_chemicals/solve.py | diff 14_chemicals/output.txt -
 ./14_chemicals/test.py
+./15_exploration/solve.py | diff 15_exploration/output.txt -
