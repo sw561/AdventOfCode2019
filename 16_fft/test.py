@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 
-from solve import phase, evolve, MyArray, part1, part2
+from solve import phase, evolve, part2
 
 def assertEqual(x, y):
     try:
@@ -9,10 +9,10 @@ def assertEqual(x, y):
         print("{} != {}".format(x, y))
         raise
 
-signal = part1("12345678")
+signal = [int(x) for x in "12345678"]
 
-signal = evolve(signal, 4)
-for s1, s2 in zip(signal[0], [int(x) for x in "01029498"]):
+signal = evolve(signal, n_phases=4)
+for s1, s2 in zip(signal, [int(x) for x in "01029498"]):
     assertEqual(s1, s2)
 
 tests = [
@@ -21,23 +21,28 @@ tests = [
 ("69317163492948606335995924319873", "52432133"),
 ]
 
+test_out = []
+
 for signal, out in tests:
-    signal = part1(signal)
+    signal = [int(x) for x in signal]
 
-    evolve(signal, 100)
+    evolve(signal)
 
-    print("".join(map(str, signal[0])))
+    test_out.append("".join(map(str, signal)))
+    # print("".join(map(str, signal)))
 
-    for s1, s2 in zip(signal[0], out):
+    for s1, s2 in zip(signal, out):
         assertEqual(s1, int(s2))
 
 offset = 20
-for signal, out in tests:
-    signal = part2(signal, offset=offset, rep=1)
+for (signal, out), to in zip(tests, test_out):
+    signal, offset, n = part2(signal, offset=offset, rep=1)
 
-    evolve(signal, 100)
+    evolve(signal, offset, n)
 
-    print(" "*offset + "".join(map(str, signal[0])))
+    # print(" "*offset + "".join(map(str, signal)))
+    s = "".join(map(str, signal))
+    assert to.endswith(s)
 
 # For part 2
 tests = [
@@ -47,12 +52,12 @@ tests = [
 ]
 
 for signal, out in tests:
-    signal = part2(signal)
-    evolve(signal, 100)
+    signal, offset, n = part2(signal)
+    evolve(signal, offset, n)
 
-    print("".join(str(i) for i, x in zip(signal[0], range(8))))
+    # print("".join(str(i) for i, x in zip(signal, range(8))))
 
-    for s1, s2 in zip(signal[0], out):
+    for s1, s2 in zip(signal, out):
         assertEqual(s1, int(s2))
 
 print("Test passed")

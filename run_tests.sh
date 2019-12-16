@@ -25,3 +25,5 @@
 ./14_chemicals/solve.py | diff 14_chemicals/output.txt -
 ./14_chemicals/test.py
 ./15_exploration/solve.py | diff 15_exploration/output.txt -
+./16_fft/solve.py | diff 16_fft/output.txt -
+./16_fft/test.py

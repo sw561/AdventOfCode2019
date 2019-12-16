@@ -1,13 +1,8 @@
 #!/usr/bin/env python3
 
-def MyArray(start, end):
-    return [[0]*(end-start), start, end]
-
-def calculate_partial_sums(s0, p0):
-    # p0 = partial_sums[0]
-    # s0 = signal[0]
-    for i in range(1, len(p0)):
-        p0[i] = p0[i-1] + s0[i-1]
+def calculate_partial_sums(x, partial, np):
+    for i in range(1, np):
+        partial[i] = partial[i-1] + x[i-1]
 
 def plus_indices(base, n):
     k = 0
@@ -39,37 +34,32 @@ def minus_indices(base, n):
 
         k += 4
 
-def phase(s0, p0, offset, n):
-    for i in range(offset, n):
-        if i < (n // 2):
+def phase(signal, partial, offset, n):
+    for i in range(n-offset):
+        if (i+offset) < (n // 2):
             x = 0
-            for start, end in plus_indices(i+1, n):
-                x += p0[end-offset] - p0[start-offset]
-            for start, end in minus_indices(i+1, n):
-                x -= p0[end-offset] - p0[start-offset]
+            for start, end in plus_indices(i+1+offset, n):
+                x += partial[end-offset] - partial[start-offset]
+            for start, end in minus_indices(i+1+offset, n):
+                x -= partial[end-offset] - partial[start-offset]
         else:
-            x = p0[n-offset] - p0[i-offset]
+            x = partial[-1] - partial[i]
 
         if x >= 0:
-            s0[i-offset] = x % 10
+            signal[i] = x % 10
         else:
-            s0[i-offset] = -x % 10
+            signal[i] = -x % 10
 
-def evolve(signal, n):
-    partial_sums = MyArray(signal[1], signal[2]+1)
+def evolve(signal, offset=0, n=None, n_phases=100):
+    if n is None:
+        n = len(signal)
+    partial_sums = [0]*(n - offset + 1)
 
-    for count in range(n):
-        calculate_partial_sums(signal[0], partial_sums[0])
-        phase(signal[0], partial_sums[0], signal[1], signal[2])
+    for count in range(n_phases):
+        calculate_partial_sums(signal, partial_sums, n-offset+1)
+        phase(signal, partial_sums, offset, n)
 
     return signal
-
-def part1(signal):
-    new_signal = MyArray(0, len(signal))
-    for i in range(new_signal[1], new_signal[2]):
-        new_signal[0][i-new_signal[1]] = int(signal[i])
-
-    return new_signal
 
 def part2(signal, offset=None, rep=10000):
     # Generate new signal starting at offset given by first 7 digits of signal
@@ -78,23 +68,28 @@ def part2(signal, offset=None, rep=10000):
     if offset is None:
         offset = int(signal[:7])
 
-    new_signal = MyArray(start=offset, end=len(signal)*rep)
+    n = len(signal)*rep
 
-    for i in range(new_signal[1], new_signal[2]):
-        new_signal[0][i-new_signal[1]] = int(signal[i%len(signal)])
+    new_signal = [0]*(n-offset)
 
-    return new_signal
+    for i in range(offset, n):
+        new_signal[i-offset] = int(signal[i%len(signal)])
 
-if __name__=="__main__":
+    return new_signal, offset, n
+
+def main():
     with open("16_fft/input.txt", 'r') as f:
         signal = f.read().strip()
 
-    p1 = part1(signal)
-    evolve(p1, 100)
+    p1 = [int(x) for x in signal]
+    evolve(p1)
 
-    print("".join(str(i) for i, x in zip(p1[0], range(8))))
+    print("".join(str(i) for i, x in zip(p1, range(8))))
 
-    p2 = part2(signal)
-    evolve(p2, 100)
+    p2, offset, n = part2(signal)
+    evolve(p2, offset, n)
 
-    print("".join(str(i) for i, x in zip(p2[0], range(8))))
+    print("".join(str(i) for i, x in zip(p2, range(8))))
+
+if __name__=="__main__":
+    main()
