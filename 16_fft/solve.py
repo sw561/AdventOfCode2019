@@ -1,14 +1,18 @@
 #!/usr/bin/env python3
 
+import numpy as np
+import numba
+
+@numba.jit()
 def calculate_partial_sums(x, partial):
     for i in range(len(partial)-1):
         partial[i+1] = partial[i] + x[i]
 
-def plus_indices(base, n):
+def get_index_blocks(base, n, a, b):
     k = 0
     while True:
-        start = (k+1)*base-1
-        end = (k+2)*base-1
+        start = (k+a)*base-1
+        end = (k+b)*base-1
         if end < n:
             yield start, end
         elif start < n:
@@ -18,21 +22,18 @@ def plus_indices(base, n):
             return
 
         k += 4
+
+def plus_indices(base, n):
+    yield from get_index_blocks(base, n, 1, 2)
 
 def minus_indices(base, n):
-    k = 0
-    while True:
-        start = (k+3)*base-1
-        end = (k+4)*base-1
-        if end < n:
-            yield start, end
-        elif start < n:
-            yield start, n
-            return
-        else:
-            return
+    yield from get_index_blocks(base, n, 3, 4)
 
-        k += 4
+@numba.jit()
+def opt_phase(signal, partial, start, end):
+    p_last = partial[-1]
+    for i in range(start, end):
+        signal[i] = (p_last - partial[i]) % 10
 
 def phase(signal, partial, offset, n):
 
@@ -47,14 +48,12 @@ def phase(signal, partial, offset, n):
 
         signal[i] = abs(x) % 10
 
-    p_last = partial[-1]
-    for i in range(change_algo, n-offset):
-        signal[i] = (p_last - partial[i]) % 10
+    opt_phase(signal, partial, change_algo, n-offset)
 
 def evolve(signal, offset=0, n=None, n_phases=100):
     if n is None:
         n = len(signal)
-    partial_sums = [0]*(n - offset + 1)
+    partial_sums = np.zeros(n - offset + 1, dtype=int)
 
     for count in range(n_phases):
         calculate_partial_sums(signal, partial_sums)
@@ -71,7 +70,7 @@ def part2(signal, offset=None, rep=10000):
 
     n = len(signal)*rep
 
-    new_signal = [0]*(n-offset)
+    new_signal = np.zeros(n-offset, dtype=int)
 
     for i in range(offset, n):
         new_signal[i-offset] = int(signal[i%len(signal)])
@@ -83,12 +82,12 @@ def main():
         signal = f.read().strip()
 
     p1 = [int(x) for x in signal]
-    evolve(p1)
+    p1 = evolve(np.array(p1))
 
     print("".join(str(i) for i, x in zip(p1, range(8))))
 
     p2, offset, n = part2(signal)
-    evolve(p2, offset, n)
+    p2 = evolve(p2, offset, n)
 
     print("".join(str(i) for i, x in zip(p2, range(8))))
 

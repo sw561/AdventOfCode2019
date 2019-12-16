@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 
-from solve import phase, evolve, part2
+from solve import evolve, part2, np
 
 def assertEqual(x, y):
     try:
@@ -9,7 +9,7 @@ def assertEqual(x, y):
         print("{} != {}".format(x, y))
         raise
 
-signal = [int(x) for x in "12345678"]
+signal = np.array([int(x) for x in "12345678"])
 
 signal = evolve(signal, n_phases=4)
 for s1, s2 in zip(signal, [int(x) for x in "01029498"]):
@@ -24,9 +24,9 @@ tests = [
 test_out = []
 
 for signal, out in tests:
-    signal = [int(x) for x in signal]
+    signal = np.array([int(x) for x in signal])
 
-    evolve(signal)
+    signal = evolve(signal)
 
     test_out.append("".join(map(str, signal)))
     # print("".join(map(str, signal)))
@@ -38,7 +38,7 @@ offset = 20
 for (signal, out), to in zip(tests, test_out):
     signal, offset, n = part2(signal, offset=offset, rep=1)
 
-    evolve(signal, offset, n)
+    signal = evolve(signal, offset, n)
 
     # print(" "*offset + "".join(map(str, signal)))
     s = "".join(map(str, signal))
@@ -53,7 +53,7 @@ tests = [
 
 for signal, out in tests:
     signal, offset, n = part2(signal)
-    evolve(signal, offset, n)
+    signal = evolve(signal, offset, n)
 
     # print("".join(str(i) for i, x in zip(signal, range(8))))
 

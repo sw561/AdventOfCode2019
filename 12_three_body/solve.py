@@ -1,8 +1,9 @@
 #!/usr/bin/env python3
 
 import re
-from copy import deepcopy
 from math import gcd
+import numpy as np
+import numba
 
 def lcm(a, b):
     g = gcd(a, b)
@@ -14,6 +15,7 @@ def lcm_iter(it):
         x = lcm(x, i)
     return x
 
+@numba.jit()
 def v_diff(a, b):
     if a > b:
         return 1
@@ -22,11 +24,12 @@ def v_diff(a, b):
     else:
         return -1
 
+@numba.jit()
 def simulate_1d(positions, t_part1=1000):
     part1 = None
     part2 = None
 
-    start = deepcopy(positions)
+    start = np.copy(positions)
 
     t = 0
     while part1 is None or part2 is None:
@@ -34,19 +37,20 @@ def simulate_1d(positions, t_part1=1000):
 
         # Update velocities first
         for i in range(len(positions)):
-            positions[i][1] += sum(
-                v_diff(positions[j][0], positions[i][0])\
-                for j in range(len(positions)) if j != i)
+            for j in range(len(positions)):
+                if j != i:
+                    positions[i][1] +=\
+                        v_diff(positions[j][0], positions[i][0])
 
         # Now update positions
         for i in range(len(positions)):
             positions[i][0] += positions[i][1]
 
-        if positions == start:
+        if np.array_equal(positions, start):
             part2 = t
 
         if t == t_part1:
-            part1 = deepcopy(positions)
+            part1 = np.copy(positions)
 
     return part1, part2
 
@@ -55,7 +59,7 @@ def solve(positions, t_part1=1000):
     part1 = []
     part2 = []
     for d_index in range(3):
-        pos, period = simulate_1d(positions[d_index], t_part1=t_part1)
+        pos, period = simulate_1d(np.array(positions[d_index], dtype=int), t_part1=t_part1)
         part1.append(pos)
         part2.append(period)
 
@@ -77,14 +81,20 @@ def process_input(f):
 
     # Want indices to be [dimension][particle_index][s]
     # where s = 0 means position, s = 1 means velocity
-    positions = [[[xi, 0] for xi in dimension] for dimension in zip(*positions)]
+    positions = [
+        [[positions[i][d], 0] for i in range(len(positions))]
+            for d in range(3)]
+
     # print(positions)
     return positions
 
-if __name__=="__main__":
+def main():
     with open("12_three_body/input.txt", 'r') as f:
         positions = process_input(f)
 
     part1, part2 = solve(positions)
     print(part1)
     print(part2)
+
+if __name__=="__main__":
+    main()
