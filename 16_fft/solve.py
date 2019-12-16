@@ -1,38 +1,54 @@
 #!/usr/bin/env python3
 
+def calculate_partial_sums(signal, partial_sums):
+    for i in range(1, len(signal)+1):
+        partial_sums[i] = partial_sums[i-1] + signal[i-1]
+
 def plus_indices(base, n):
     k = 0
     while True:
-        for i in range((k+1)*base-1, (k+2)*base-1):
-            if i >= n:
-                return
-            yield i
+        start = (k+1)*base-1
+        end = (k+2)*base-1
+        if start >= n:
+            return
+        elif end >= n:
+            yield start, n
+            return
+        else:
+            yield start, end
 
         k += 4
 
 def minus_indices(base, n):
     k = 0
     while True:
-        for i in range((k+3)*base-1, (k+4)*base-1):
-            if i >= n:
-                return
-            yield i
+        start = (k+3)*base-1
+        end = (k+4)*base-1
+        if start >= n:
+            return
+        elif end >= n:
+            yield start, n
+            return
+        else:
+            yield start, end
 
         k += 4
 
-def phase(signal, new_signal):
-    n = len(signal)
+def phase(new_signal, partial_sums):
+    n = len(new_signal)
     for i in range(n):
         new_signal[i] = abs(
-            sum(signal[j] for j in plus_indices(i+1, n)) -
-            sum(signal[j] for j in minus_indices(i+1, n))
+            sum(partial_sums[end] - partial_sums[start] for start, end in plus_indices(i+1, n)) -
+            sum(partial_sums[end] - partial_sums[start] for start, end in minus_indices(i+1, n))
             ) % 10
 
 def evolve(signal, n):
     new_signal = [0] * len(signal)
+    partial_sums = [0] * (len(signal) + 1)
 
     for _ in range(n):
-        phase(signal, new_signal)
+        calculate_partial_sums(signal, partial_sums)
+        phase(new_signal, partial_sums)
         signal, new_signal = new_signal, signal
 
     return signal
