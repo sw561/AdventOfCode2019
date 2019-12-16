@@ -1,7 +1,25 @@
 #!/usr/bin/env python3
 
+class MyArray(list):
+    def __init__(self, start, end):
+        self.start = start
+        self.end = end
+        self.data = [0]*(end-start)
+
+    def __iter__(self):
+        return iter(self.data)
+
+    def __len__(self):
+        return len(self.data)
+
+    def __getitem__(self, i):
+        return self.data[i - self.start]
+
+    def __setitem__(self, i, x):
+        self.data[i - self.start] = x
+
 def calculate_partial_sums(signal, partial_sums):
-    for i in range(1, len(signal)+1):
+    for i in range(partial_sums.start+1, partial_sums.end):
         partial_sums[i] = partial_sums[i-1] + signal[i-1]
 
 def plus_indices(base, n):
@@ -34,29 +52,52 @@ def minus_indices(base, n):
 
         k += 4
 
-def phase(new_signal, partial_sums):
-    n = len(new_signal)
-    for i in range(n):
-        new_signal[i] = abs(
-            sum(partial_sums[end] - partial_sums[start] for start, end in plus_indices(i+1, n)) -
-            sum(partial_sums[end] - partial_sums[start] for start, end in minus_indices(i+1, n))
+def phase(signal, partial_sums):
+    for i in range(signal.start, signal.end):
+        signal[i] = abs(
+            sum(partial_sums[end] - partial_sums[start] for start, end in plus_indices(i+1, signal.end)) -
+            sum(partial_sums[end] - partial_sums[start] for start, end in minus_indices(i+1, signal.end))
             ) % 10
 
 def evolve(signal, n):
-    new_signal = [0] * len(signal)
-    partial_sums = [0] * (len(signal) + 1)
+    partial_sums = MyArray(signal.start, signal.end+1)
 
-    for _ in range(n):
+    for count in range(n):
         calculate_partial_sums(signal, partial_sums)
-        phase(new_signal, partial_sums)
-        signal, new_signal = new_signal, signal
+        phase(signal, partial_sums)
 
     return signal
 
+def part1(signal):
+    new_signal = MyArray(0, len(signal))
+    for i in range(new_signal.start, new_signal.end):
+        new_signal[i] = int(signal[i])
+
+    return new_signal
+
+def part2(signal):
+    # Generate new signal starting at offset given by first 7 digits of signal
+    # and then from signal repeated 10000 times
+
+    offset = int(signal[:7])
+
+    new_signal = MyArray(start=offset, end=len(signal)*10000)
+
+    for i in range(new_signal.start, new_signal.end):
+        new_signal[i] = int(signal[i%len(signal)])
+
+    return new_signal
+
 if __name__=="__main__":
     with open("16_fft/input.txt", 'r') as f:
-        signal = [int(x) for x in f.read().strip()]
+        signal = f.read().strip()
 
-    evolve(signal, 100)
+    p1 = part1(signal)
+    evolve(p1, 100)
 
-    print("".join(map(str, signal[:8])))
+    print("".join(str(i) for i, x in zip(p1, range(8))))
+
+    p2 = part2(signal)
+    evolve(p2, 100)
+
+    print("".join(str(i) for i, x in zip(p2, range(8))))
