@@ -1,8 +1,8 @@
 #!/usr/bin/env python3
 
-def calculate_partial_sums(x, partial, np):
-    for i in range(1, np):
-        partial[i] = partial[i-1] + x[i-1]
+def calculate_partial_sums(x, partial):
+    for i in range(len(partial)-1):
+        partial[i+1] = partial[i] + x[i]
 
 def plus_indices(base, n):
     k = 0
@@ -35,20 +35,21 @@ def minus_indices(base, n):
         k += 4
 
 def phase(signal, partial, offset, n):
-    for i in range(n-offset):
-        if (i+offset) < (n // 2):
-            x = 0
-            for start, end in plus_indices(i+1+offset, n):
-                x += partial[end-offset] - partial[start-offset]
-            for start, end in minus_indices(i+1+offset, n):
-                x -= partial[end-offset] - partial[start-offset]
-        else:
-            x = partial[-1] - partial[i]
 
-        if x >= 0:
-            signal[i] = x % 10
-        else:
-            signal[i] = -x % 10
+    change_algo = max(n//2 - offset, 0)
+
+    for i in range(change_algo):
+        x = 0
+        for start, end in plus_indices(i+1+offset, n):
+            x += partial[end-offset] - partial[start-offset]
+        for start, end in minus_indices(i+1+offset, n):
+            x -= partial[end-offset] - partial[start-offset]
+
+        signal[i] = abs(x) % 10
+
+    p_last = partial[-1]
+    for i in range(change_algo, n-offset):
+        signal[i] = (p_last - partial[i]) % 10
 
 def evolve(signal, offset=0, n=None, n_phases=100):
     if n is None:
@@ -56,7 +57,7 @@ def evolve(signal, offset=0, n=None, n_phases=100):
     partial_sums = [0]*(n - offset + 1)
 
     for count in range(n_phases):
-        calculate_partial_sums(signal, partial_sums, n-offset+1)
+        calculate_partial_sums(signal, partial_sums)
         phase(signal, partial_sums, offset, n)
 
     return signal
