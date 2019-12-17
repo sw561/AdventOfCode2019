@@ -27,3 +27,5 @@
 ./15_exploration/solve.py | diff 15_exploration/output.txt -
 ./16_fft/solve.py | diff 16_fft/output.txt -
 ./16_fft/test.py
+./17_ascii/solve.py | diff 17_ascii/output.txt -
+./17_ascii/test.py
