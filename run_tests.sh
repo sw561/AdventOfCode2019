@@ -29,3 +29,5 @@
 ./16_fft/test.py
 ./17_ascii/solve.py | diff 17_ascii/output.txt -
 ./17_ascii/test.py
+./18_keys/solve.py | diff 18_keys/output.txt -
+./18_keys/test.py

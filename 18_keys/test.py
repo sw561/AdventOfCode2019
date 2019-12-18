@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 
-from solve import solve, solve_part2
+from solve import solve
 
 def assertEqual(x, y):
     try:
@@ -13,7 +13,7 @@ m = """#########
 #b.A.@.a#
 #########""".split()
 
-r = solve(m)
+r = solve(m, '@')
 assertEqual(r, 8)
 
 m = """########################
@@ -22,7 +22,7 @@ m = """########################
 #d.....................#
 ########################""".split()
 
-r = solve(m)
+r = solve(m, '@')
 assertEqual(r, 86)
 
 m = """###############
@@ -33,7 +33,7 @@ m = """###############
 #b.....#.....c#
 ###############""".split()
 
-r = solve_part2(m)
+r = solve(m, '1234')
 assertEqual(r, 24)
 
 m = """#############
@@ -46,7 +46,7 @@ m = """#############
 #o#m..#i#jk.#
 #############""".split()
 
-r = solve_part2(m)
+r = solve(m, '1234')
 assertEqual(r, 72)
 
 print("Test passed")
