@@ -1,6 +1,5 @@
 #!/usr/bin/env python3
 
-from collections import defaultdict
 from itertools import chain
 from heapq import *
 
@@ -17,11 +16,11 @@ def get_keys(m, entrances='@'):
             if m[yi][xi].islower() or m[yi][xi] in entrances:
                 yield m[yi][xi], (xi, yi)
 
-def find_path(m, k, pos, count_keys):
+def find_path(m, k, pos):
 
     # queue contains (pos, requirements, keys_collected_so_far) tuple
     # where keys_collected is a sorted tuple
-    d = [(pos, (), (k))]
+    d = [(pos, "", k)]
 
     seen = set()
     seen.add(pos)
@@ -31,7 +30,7 @@ def find_path(m, k, pos, count_keys):
     while d:
         steps_taken += 1
         new_nodes = []
-        for pos, requirements, keys in d:
+        for pos, requirements, keys_collected in d:
 
             for xi, yi in neighbours(*pos):
 
@@ -43,16 +42,16 @@ def find_path(m, k, pos, count_keys):
                 if (xi, yi) in seen:
                     continue
 
+                if m[yi][xi].islower():
+                    new_keys = keys_collected + m[yi][xi]
+                    yield m[yi][xi], requirements, new_keys, steps_taken
+                else:
+                    new_keys = keys_collected
+
                 if m[yi][xi].isupper():
-                    new_requirements = tuple(chain(requirements, [m[yi][xi]]))
+                    new_requirements = requirements + m[yi][xi]
                 else:
                     new_requirements = requirements
-
-                if m[yi][xi].islower():
-                    new_keys = tuple(chain(keys, [m[yi][xi]]))
-                    yield m[yi][xi], requirements, steps_taken
-                else:
-                    new_keys = keys
 
                 seen.add((xi, yi))
                 new_nodes.append(((xi, yi), new_requirements, new_keys))
@@ -67,30 +66,25 @@ def find_path(m, k, pos, count_keys):
 
 def get_graph_edges(m, entrances='@'):
 
-    keys = {c: pos for c, pos in get_keys(m, entrances=entrances)}
-    count_keys = len(keys)
-
     # edges[(i, j)] is list of keys required to go from key i to key j
     # i < j always
     edges = dict()
 
-    for k, starting_pos in keys.items():
-        for other_key, requirements, distance in find_path(m, k, starting_pos, count_keys):
+    for k, starting_pos in get_keys(m, entrances=entrances):
+        edges[k] = dict()
+        for other_key, requirements, keys_collected, distance in find_path(m, k, starting_pos):
+            edges[k][other_key] = (requirements, keys_collected, distance)
 
-            fs = tuple(sorted([k, other_key]))
-            if fs not in edges:
-                edges[fs] = (requirements, distance)
-
-    return list(keys.keys()), edges
+    return edges
 
 def solve(m):
-    keys, edges = get_graph_edges(m)
+    edges = get_graph_edges(m)
 
-    # print(keys)
-    # print(len(keys))
-    # for fs, (req, d) in edges.items():
-    #     print(fs, req, d)
-    # print(len(edges))
+    n_keys = len(edges)
+
+    # for k in sorted(edges.keys()):
+    #     for k2, (r, d) in edges[k].items():
+    #         print((k, k2), r, d)
     # print("-------------")
 
     # Now do dijkstra starting at '@' and moving until all keys are collected,
@@ -109,23 +103,25 @@ def solve(m):
     while h:
 
         current_distance, current_key, owned_keys = heappop(h)
-        if len(owned_keys) == len(keys):
+
+        if current_distance > distances[(current_key, owned_keys)]:
+            continue
+
+        if len(owned_keys) == n_keys:
             # print("Found shortest route", current_distance)
             return current_distance
 
-        for other_key in keys:
-            if other_key == current_key:
-                continue
+        for other_key in edges[current_key].keys():
 
             if other_key in owned_keys:
                 continue
 
-            requirements, distance = edges[tuple(sorted([current_key, other_key]))]
+            requirements, keys_collected, distance = edges[current_key][other_key]
             if any(r.lower() not in owned_keys for r in requirements):
                 continue
 
             new_distance = current_distance + distance
-            new_owned_keys = "".join(sorted(owned_keys + other_key))
+            new_owned_keys = "".join(sorted(set(owned_keys + keys_collected)))
             if (other_key, new_owned_keys) in distances and distances[(other_key, new_owned_keys)] <= new_distance:
                 continue
             else:
@@ -153,13 +149,13 @@ def patch_for_part2(m):
     return m
 
 def solve_part2(m):
-    keys, edges = get_graph_edges(m, entrances='1234')
+    edges = get_graph_edges(m, entrances='1234')
 
-    # print(keys)
-    # print(len(keys))
-    # for fs, (req, d) in edges.items():
-    #     print(fs, req, d)
-    # print(len(edges))
+    n_keys = len(edges)
+
+    # for k in sorted(edges.keys()):
+    #     for k2, (r, d) in edges[k].items():
+    #         print((k, k2), r, d)
     # print("-------------")
 
     # For part 2 we have 4 positions, but just one string of currently owned keys
@@ -178,31 +174,29 @@ def solve_part2(m):
     while h:
 
         current_distance, current_keys, owned_keys = heappop(h)
-        if len(owned_keys) == len(keys):
+
+        if current_distance > distances[(current_keys, owned_keys)]:
+            continue
+
+        if len(owned_keys) == n_keys:
             # print("Found shortest route", current_distance)
             return current_distance
 
         for index in range(4):
             current_key = current_keys[index]
 
-            for other_key in keys:
-                if other_key == current_key:
-                    continue
-
-                fs = tuple(sorted([current_key, other_key]))
-                if fs not in edges:
-                    continue
+            for other_key in edges[current_key].keys():
 
                 if other_key in owned_keys:
                     continue
 
-                requirements, distance = edges[fs]
+                requirements, keys_collected, distance = edges[current_key][other_key]
                 if any(r.lower() not in owned_keys for r in requirements):
                     continue
 
                 new_distance = current_distance + distance
                 new_current_keys = tuple(other_key if i == index else current_keys[i] for i in range(4))
-                new_owned_keys = "".join(sorted(owned_keys + other_key))
+                new_owned_keys = "".join(sorted(set(owned_keys + keys_collected)))
 
                 if (new_current_keys, new_owned_keys) in distances and distances[(new_current_keys, new_owned_keys)] <= new_distance:
                     continue
