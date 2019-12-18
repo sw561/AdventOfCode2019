@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 
-from solve import find_path, find_path_part2
+from solve import solve, solve_part2
 
 def assertEqual(x, y):
     try:
@@ -13,7 +13,7 @@ m = """#########
 #b.A.@.a#
 #########""".split()
 
-r = find_path(m)
+r = solve(m)
 assertEqual(r, 8)
 
 m = """########################
@@ -22,31 +22,31 @@ m = """########################
 #d.....................#
 ########################""".split()
 
-r = find_path(m)
+r = solve(m)
 assertEqual(r, 86)
 
 m = """###############
 #d.ABC.#.....a#
-######@#@######
+######1#2######
 ###############
-######@#@######
+######3#4######
 #b.....#.....c#
 ###############""".split()
 
-r = find_path_part2(m)
+r = solve_part2(m)
 assertEqual(r, 24)
 
 m = """#############
 #g#f.D#..h#l#
 #F###e#E###.#
-#dCba@#@BcIJ#
+#dCba1#2BcIJ#
 #############
-#nK.L@#@G...#
+#nK.L3#4G...#
 #M###N#H###.#
 #o#m..#i#jk.#
 #############""".split()
 
-r = find_path_part2(m)
+r = solve_part2(m)
 assertEqual(r, 72)
 
 print("Test passed")
