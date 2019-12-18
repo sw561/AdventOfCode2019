@@ -4,19 +4,12 @@ import sys
 sys.path.append('.')
 from intcode_computer import ProgramInstance, copy
 
-def neighbour(x, y, inp):
-    if inp == 1:
-        return x, y-1
-    elif inp == 2:
-        return x, y+1
-    elif inp == 3:
-        return x-1, y
-    elif inp == 4:
-        return x+1, y
-
-def neighbours(x, y):
-    for i in range(1, 5):
-        yield neighbour(x, y, i), i
+neighbour = {
+    1: lambda x, y: (x,   y-1),
+    2: lambda x, y: (x,   y+1),
+    3: lambda x, y: (x-1, y),
+    4: lambda x, y: (x+1, y),
+}
 
 inverse_step = {1: 2, 2: 1, 3: 4, 4: 3}
 
@@ -32,7 +25,8 @@ def explore(prog):
 
     while True:
 
-        for new_pos, inp in neighbours(*pos):
+        for inp in range(1, 5):
+            new_pos = neighbour[inp](*pos)
 
             if new_pos in m:
                 continue
@@ -59,7 +53,7 @@ def explore(prog):
             last = steps_from_origin.pop()
             o = p.run(inverse_step[last])
             assert o[0] != 0
-            pos = neighbour(*pos, inverse_step[last])
+            pos = neighbour[inverse_step[last]](*pos)
 
         # display(m)
         # input()
@@ -79,7 +73,8 @@ def oxygen_fill(m, pos):
         new_nodes = []
         for node in nodes:
 
-            for new_node, inp in neighbours(*node):
+            for inp in range(1, 5):
+                new_node = neighbour[inp](*node)
                 if m[new_node] in ['#', 'O']:
                     continue
 

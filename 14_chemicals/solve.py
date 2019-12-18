@@ -89,4 +89,15 @@ if __name__=="__main__":
     p = calculate_priorities(reactants, products)
 
     print(solve(p, reactions))
-    print(solve(p, reactions, part2=True))
+
+    nf = solve(p, reactions, part2=True)
+    nfo = solve(p, reactions, n_fuel=nf)
+    if nfo > 1e12:
+        while nfo > 1e12:
+            nf -= 1
+            nfo = solve(p, reactions, n_fuel=nf)
+    else:
+        while solve(p, reactions, n_fuel=nf+1) <= 1e12:
+            nf += 1
+
+    print(nf)

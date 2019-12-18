@@ -3,7 +3,6 @@
 import sys
 sys.path.append('.')
 from intcode_computer import ProgramInstance
-from collections import Counter
 
 def part1(prog):
     # Run in test mode - part 1
@@ -18,8 +17,7 @@ def part1(prog):
         tile_id = o[i+2]
         d[(x, y)] = tile_id
 
-    count_blocks = Counter(v for k, v in d.items())
-    return count_blocks[2]
+    return sum(v==2 for k, v in d.items())
 
 def calculate_input(ball_position, paddle_position):
     if ball_position[0] > paddle_position[0]:
@@ -28,6 +26,8 @@ def calculate_input(ball_position, paddle_position):
         return 'h'
     else:
         return ' '
+
+keypress_map = {'h': -1, 'l': 1}
 
 def run_game(prog):
     p = ProgramInstance(prog)
@@ -63,8 +63,6 @@ character_map = {
     3: '-',
     4: 'o'
 }
-
-keypress_map = {'l': 1, 'h': -1}
 
 def display(d):
     xmin = min(pos[0] for pos in d.keys())

@@ -62,10 +62,9 @@ def run(prog, p=0, relative_base=0, inp=None):
             if inp is None:
                 # Need to wait for input
                 return 'WAIT', prog, p, relative_base, out
-            else:
-                write_pointer = read_pointer(prog, relative_base, prog[p+1], mode1)
-                prog[write_pointer] = inp
-                inp = None
+            write_pointer = read_pointer(prog, relative_base, prog[p+1], mode1)
+            prog[write_pointer] = inp
+            inp = None
             p += 2
 
         elif op == 4:

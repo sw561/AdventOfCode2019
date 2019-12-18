@@ -8,7 +8,7 @@ def get_layers(width, height, data):
     return np.reshape(data, (-1, height, width))
 
 def part1(layers):
-    layer_counts = [Counter(list(np.reshape(layer, -1))) for layer in layers]
+    layer_counts = [Counter(np.reshape(layer, -1)) for layer in layers]
 
     best = min(layer_counts, key=lambda x: x[0])
 

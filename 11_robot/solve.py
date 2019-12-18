@@ -13,8 +13,8 @@ new_position_func_dict = {
 }
 
 u = ["^", ">", "v", "<"]
-turn_right_dict = {u[i]: u[(i+1)%4] for i in range(4)}
-turn_left_dict = {u[i]: u[(i-1)%4] for i in range(4)}
+turn_right_dict = {u[i-1]: u[i] for i in range(4)}
+turn_left_dict  = {u[i]: u[i-1] for i in range(4)}
 
 def simulate(prog, start=0):
     p = intcode_computer.ProgramInstance(prog)
@@ -36,8 +36,6 @@ def simulate(prog, start=0):
             d = turn_right_dict[d]
 
         pos = new_position_func_dict[d](*pos)
-        # print(d, pos, hull)
-        # print(p.status)
 
     return hull
             
