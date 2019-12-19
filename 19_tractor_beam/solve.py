@@ -11,39 +11,43 @@ def query(x, y):
     out = p.run(x) + p.run(y)
     return out[0]
 
+def coords_iter(n):
+    # yield from a square grid (0, 0) to (n, n) INCLUSIVE
+    for d in range(2*n+1):
+        for x in range(max(0, d-n), min(n, d)+1):
+            y = d-x
+            yield x, y
+
 def part1():
-    # m = [[0]*50 for _ in range(50)]
     s = 0
+
     # Calculate max and min angles of tractor beam
     theta_min = None
     theta_max = None
-    for j in range(50):
-        for i in range(50):
-            if query(i, j):
-                # m[j][i] = 1
-                s += 1
-                if min(i, j) < 10:
-                    continue
-                theta = atan2(i, j)
-                if theta_min is None or theta < theta_min:
-                    theta_min = theta
-                if theta_max is None or theta > theta_max:
-                    theta_max = theta
 
-    # for row in m:
-    #     for c in row:
-    #         print('#' if c else ' ', end='')
-    #     print()
+    for i, j in coords_iter(49):
+        if i+j < 5:
+            # Don't mess with trigonometry when very close to origin
+            s += query(i, j)
+            continue
+
+        if i+j >= 20:
+            # If far from origin, can use trig to skip some queries
+            t = (atan2(i, j) - theta_min) / (theta_max - theta_min)
+            if t < -0.1 or t > 1.1:
+                continue
+
+        if query(i, j):
+            theta = atan2(i, j)
+            if theta_min is None or theta < theta_min:
+                theta_min = theta
+            if theta_max is None or theta > theta_max:
+                theta_max = theta
+            s += 1
 
     return s, theta_min, theta_max
 
 def choose_starting_position(theta_min, theta_max):
-
-    # print(theta_max)
-    # print(theta_min)
-
-    # print(theta_max*180 / pi)
-    # print(theta_min*180 / pi)
 
     middle_angle = (theta_max + theta_min) / 2
 
@@ -52,7 +56,7 @@ def choose_starting_position(theta_min, theta_max):
     # Use small angle approximation for long thin triangle.
     # This is estimate of distance to middle of ship.
     distance_to_ship = (cos(middle_angle) + sin(middle_angle)) * 99 / (theta_max - theta_min)
-    
+
     # To ensure we start search closer to origin than the top left corner
     distance_to_ship -= sqrt(2) * 99
 
@@ -68,14 +72,13 @@ def choose_starting_position(theta_min, theta_max):
 def neighbours(x, y):
     yield x+1, y
     yield x, y+1
-    yield x+1, y+1
 
 def part2(start_x, start_y, theta_min, theta_max):
-    # Do bfs away from 0, 0 in positive directions only.
+    # Do bfs away from start_x, start_y in positive directions only.
     #
     # Looking for a 100x100 space. (i.e. change in coords is 99x99)
     #
-    # Stop when we find a spot in the beam (x, y) where either 
+    # Stop when we find a spot in the beam (x, y) where either
     #   (x-99, y+99) and (x-99, y) are in the beam
     # or
     #   (x+99, y-99) and (x, y-99) are in the beam
@@ -86,9 +89,8 @@ def part2(start_x, start_y, theta_min, theta_max):
     while d:
         pos = d.popleft()
 
-        # print(pos)
         for x, y in neighbours(*pos):
-            # print("Candidate ({}, {}) with q = {}".format(x, y, query(x, y)))
+
             if (x, y) in seen:
                 continue
 
@@ -110,10 +112,8 @@ if __name__=="__main__":
 
     s, theta_min, theta_max = part1()
     print(s)
-    # print(theta_min, theta_max)
 
     start_x, start_y = choose_starting_position(theta_min, theta_max)
-    # print(start_x, start_y)
 
     x, y = part2(start_x, start_y, theta_min, theta_max)
 
