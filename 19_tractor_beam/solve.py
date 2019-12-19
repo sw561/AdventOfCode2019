@@ -70,7 +70,7 @@ def neighbours(x, y):
     yield x, y+1
     yield x+1, y+1
 
-def part2(start_x, start_y):
+def part2(start_x, start_y, theta_min, theta_max):
     # Do bfs away from 0, 0 in positive directions only.
     #
     # Looking for a 100x100 space. (i.e. change in coords is 99x99)
@@ -91,7 +91,9 @@ def part2(start_x, start_y):
             # print("Candidate ({}, {}) with q = {}".format(x, y, query(x, y)))
             if (x, y) in seen:
                 continue
-            if not query(x, y):
+
+            s = (atan2(x, y) - theta_min) / (theta_max - theta_min)
+            if (s < 0.1 or s > 0.9) and not query(x, y):
                 continue
 
             if (x-99, y) in seen and (x-99, y+99) in seen:
@@ -108,12 +110,11 @@ if __name__=="__main__":
 
     s, theta_min, theta_max = part1()
     print(s)
+    # print(theta_min, theta_max)
 
     start_x, start_y = choose_starting_position(theta_min, theta_max)
+    # print(start_x, start_y)
 
-    x, y = part2(start_x, start_y)
+    x, y = part2(start_x, start_y, theta_min, theta_max)
 
     print(x * 10000 + y)
-
-    # print(query(3, 4))
-    # print(query(4, 5))
