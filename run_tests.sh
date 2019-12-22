@@ -34,3 +34,4 @@
 ./19_tractor_beam/solve.py | diff 19_tractor_beam/output.txt -
 ./20_donut/solve.py | diff 20_donut/output.txt -
 ./20_donut/test.py
+./21_springdroid/solve.py | diff 21_springdroid/output.txt -
