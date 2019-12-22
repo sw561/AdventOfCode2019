@@ -32,3 +32,5 @@
 ./18_keys/solve.py | diff 18_keys/output.txt -
 ./18_keys/test.py
 ./19_tractor_beam/solve.py | diff 19_tractor_beam/output.txt -
+./20_donut/solve.py | diff 20_donut/output.txt -
+./20_donut/test.py
