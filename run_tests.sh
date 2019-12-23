@@ -35,3 +35,5 @@
 ./20_donut/solve.py | diff 20_donut/output.txt -
 ./20_donut/test.py
 ./21_springdroid/solve.py | diff 21_springdroid/output.txt -
+./22_shuffling/solve.py | diff 22_shuffling/output.txt -
+./22_shuffling/test.py

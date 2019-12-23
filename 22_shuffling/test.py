@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 
-from solve import process_input, get_position
+from solve import process_input, reduce, mul # , get_position, get_card
 
 def compare_deck(d1, d2):
     for c1, c2 in zip(d1, d2):
@@ -11,10 +11,18 @@ def compare_deck(d1, d2):
             print(d2)
             raise
 
-def construct_deck(fs, n):
+def construct_deck(fs, nshuffle=1):
+    n = fs[0].n
     deck = [None]*n
+    composed_f = reduce(mul, reversed(fs))
+    temp = composed_f
+    for i in range(nshuffle-1):
+        temp *= composed_f
+    composed_f = temp
+
+    # print("c", composed_f)
     for i in range(n):
-        p = get_position(fs, i, n)
+        p = composed_f(i)
         if not deck[p] is None:
             raise
         deck[p] = i
@@ -23,12 +31,27 @@ def construct_deck(fs, n):
 def test(f, expected_out):
     f = f.split('\n')
 
-    fs = process_input(f)
-    # for f in fs:
-    #     print(f, f.__name__)
+    # Compare with given output
+    fs, inv_fs = process_input(f, 10)
 
-    deck = construct_deck(fs, 10)
+    deck = construct_deck(fs)
     compare_deck(deck, [int(x) for x in expected_out.split()])
+
+    # Compare fowards with backwards calculation
+    fs, inv_fs = process_input(f, 11)
+    composed_inv = reduce(mul, inv_fs)
+
+    deck1 = construct_deck(fs)
+    deck2 = map(composed_inv, range(11))
+
+    compare_deck(deck1, deck2)
+
+    # Compare clever pow with explicit mul
+    deck1 = construct_deck(fs, 21)
+    composed_inv = composed_inv**21
+    deck2 = map(composed_inv, range(11))
+
+    compare_deck(deck1, deck2)
 
 f = """
 deal with increment 7
