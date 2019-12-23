@@ -36,7 +36,7 @@ def read_pointer(prog, relative_base, val, mode):
         prog += [0]*max(len(prog)//2, ret-len(prog)+1)
     return ret
 
-def run(prog, p=0, relative_base=0, inp=None):
+def run(prog, p=0, relative_base=0, inp=None, clock=0):
     out = []
     while True:
         op, mode1, mode2, mode3 = decouple(prog[p])
@@ -61,7 +61,7 @@ def run(prog, p=0, relative_base=0, inp=None):
         elif op == 3:
             if inp is None:
                 # Need to wait for input
-                return 'WAIT', prog, p, relative_base, out
+                return 'WAIT', prog, p, relative_base, out, clock
             write_pointer = read_pointer(prog, relative_base, prog[p+1], mode1)
             prog[write_pointer] = inp
             inp = None
@@ -86,10 +86,11 @@ def run(prog, p=0, relative_base=0, inp=None):
             p += 2
 
         elif op == 99:
-            return 'EXIT', prog, None, None, out
+            return 'EXIT', prog, None, None, out, clock
 
         else:
             raise Exception("Unrecognized op code: {}".format(op))
+        clock += 1
 
 class ProgramInstance:
     def __init__(self, prog):
@@ -97,13 +98,14 @@ class ProgramInstance:
         self.p = 0
         self.relative_base = 0
         self.status = 'READY'
+        self.clock = 0
 
     def run(self, inp=None):
         # Run until requires input or exits, returns any output values produced
         assert (self.status == 'READY') or (self.status == 'WAIT' and inp is not None)
 
-        self.status, self.prog, self.p, self.relative_base, out = \
-                run(self.prog, self.p, self.relative_base, inp)
+        self.status, self.prog, self.p, self.relative_base, out, self.clock = \
+                run(self.prog, self.p, self.relative_base, inp, self.clock)
 
         return out
 
