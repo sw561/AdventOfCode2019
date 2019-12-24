@@ -38,3 +38,5 @@
 ./22_shuffling/solve.py | diff 22_shuffling/output.txt -
 ./22_shuffling/test.py
 ./23_networking/solve.py | diff 23_networking/output.txt -
+./24_bugs/solve.py | diff 24_bugs/output.txt -
+./24_bugs/test.py
