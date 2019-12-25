@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 
-from copy import deepcopy
+from copy import copy
 from collections import defaultdict
 
 def neighbours(x, y):
@@ -12,58 +12,12 @@ def neighbours(x, y):
 def checked_neighbours(x, y, xmax, ymax):
     for i, j in neighbours(x, y):
         if 0 <= i < xmax and 0 <= j < ymax:
-            yield i, j
+            yield 0, i, j
 
-def update(m, m2):
-    xmax = len(m[0])
-    ymax = len(m)
+part1_neighbours = {(x, y): list(checked_neighbours(x, y, 5, 5))
+    for x in range(5) for y in range(5)}
 
-    for y in range(ymax):
-        for x in range(xmax):
-
-            live = sum(m[j][i] == '#' for i, j in checked_neighbours(x, y, xmax, ymax))
-
-            if m[y][x] == '#' and live != 1:
-                m2[y][x] = '.'
-            elif m[y][x] == '.' and 1 <= live <= 2:
-                m2[y][x] = '#'
-            else:
-                m2[y][x] = m[y][x]
-
-def process(s):
-    return [[c for c in line.strip()] for line in s.split()]
-
-def display(m):
-    print("\n".join("".join(row) for row in m))
-
-def iter_m(m):
-    for row in m:
-        for c in row:
-            yield c
-
-def biodiversity(m):
-    b = 0
-    for i, c in enumerate(iter_m(m)):
-        if c == '#':
-            b |= (1 << i)
-    return b
-
-def solve(m):
-    m = deepcopy(m)
-    m2 = deepcopy(m)
-    seen = set()
-    seen.add(biodiversity(m))
-    while True:
-        update(m, m2)
-        m2, m = m, m2
-        b = biodiversity(m)
-        if b in seen:
-            # display(m)
-            return b
-        else:
-            seen.add(b)
-
-def part2_neighbours(level, x, y, xmax, ymax):
+def recursive_neighbours(level, x, y, xmax, ymax):
     for i, j in neighbours(x, y):
         if i < 0:
             yield level-1, 1, 2
@@ -90,69 +44,66 @@ def part2_neighbours(level, x, y, xmax, ymax):
         else:
             yield level, i, j
 
-def display_part2(d):
-    for i in sorted(d.keys()):
-        print(i)
-        display(d[i])
-        print("------------")
+part2_neighbours = {(x, y): list(recursive_neighbours(0, x, y, 5, 5))
+    for x in range(5) for y in range(5)}
 
-def update_part2(d, d2):
-    xmax = len(d[0][0])
-    ymax = len(d[0])
+def process(s):
+    d = set()
+    s = s.split()
+    for y in range(5):
+        for x in range(5):
+            if s[y][x] == '#':
+                d.add((0, x, y))
 
-    dkeys = list(d.keys())
-    for level in range(min(dkeys)-1, max(dkeys)+2):
-        for y in range(ymax):
-            for x in range(xmax):
-                if x == 2 and y == 2:
-                    continue
-                live = sum(d[l][j][i] == '#' for l, i, j in part2_neighbours(level, x, y, xmax, ymax))
+    return d
 
-                if d[level][y][x] == '#' and live != 1:
-                    d2[level][y][x] = '.'
-                elif d[level][y][x] == '.' and 1 <= live <= 2:
-                    d2[level][y][x] = '#'
-                else:
-                    d2[level][y][x] = d[level][y][x]
+def update(d, part2=False):
+    if not part2:
+        neighbours = part1_neighbours
+    else:
+        neighbours = part2_neighbours
+    count = defaultdict(int)
 
-    for level in list(d2.keys()):
-        if biodiversity(d2[level]) == 0:
-            del d2[level]
-    for level in list(d.keys()):
-        if biodiversity(d[level]) == 0:
-            del d[level]
+    for (level, x, y) in d:
+        for dl, i, j in neighbours[(x, y)]:
+            count[(level+dl, i, j)] += 1
 
-def solve_part2(m, n=200):
-    d = defaultdict(lambda: [['.']*5 for _ in range(5)])
-    d2 = deepcopy(d)
+    new_d = set()
 
-    d[0] = m
+    for square, c in count.items():
+        if c == 1:
+            new_d.add(square)
+        elif c == 2 and square not in d:
+            new_d.add(square)
+    return new_d
 
-    # display_part2(d)
+def biodiversity(d):
+    b = 0
+    for (level, x, y) in d:
+        b |= (1 << (y*5 + x))
+    return b
 
+def solve(d):
+    seen = set()
+    seen.add(biodiversity(d))
+    while True:
+        d = update(d)
+        b = biodiversity(d)
+        if b in seen:
+            return b
+        else:
+            seen.add(b)
+
+def solve_part2(d, n=200):
     for _ in range(n):
-        update_part2(d, d2)
-        d2, d = d, d2
+        d = update(d, part2=True)
 
-    # display_part2(d)
-
-    return count_bugs(d)
-
-def count_bugs(d):
-    s = 0
-    for level in d.keys():
-        for row in d[level]:
-            for c in row:
-                if c == '#':
-                    s += 1
-    return s
+    return len(d)
 
 if __name__=="__main__":
     with open("24_bugs/input.txt", 'r') as f:
-        m = process(f.read())
+        d = process(f.read())
 
-    print(solve(m))
+    print(solve(copy(d)))
 
-    d = solve_part2(m)
-
-    print(d)
+    print(solve_part2(d))
