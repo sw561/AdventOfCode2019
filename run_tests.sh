@@ -40,3 +40,4 @@
 ./23_networking/solve.py | diff 23_networking/output.txt -
 ./24_bugs/solve.py | diff 24_bugs/output.txt -
 ./24_bugs/test.py
+./25_game/solve.py 25_game/attempt | grep keypad | grep -Eo "[0-9]+" | diff 25_game/output.txt -

@@ -46,7 +46,7 @@ def simulate(prog, my_f):
             print(chr(i) if i < 128 else i, end='')
 
     else:
-        exit("Reached exit status")
+        exit()
 
 objects = [
 "hypercube",
