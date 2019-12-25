@@ -1,6 +1,5 @@
 #!/usr/bin/env python3
 
-from itertools import chain
 from collections import defaultdict
 from heapq import heappush, heappop
 

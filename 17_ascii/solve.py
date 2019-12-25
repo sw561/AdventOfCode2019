@@ -46,7 +46,6 @@ def find_start(m):
                 return x, y
 
 def find_steps(m):
-    # Find starting position
     xmax = len(m[0])
     ymax = len(m)
 

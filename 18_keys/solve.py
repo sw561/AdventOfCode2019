@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 
 from itertools import chain
-from heapq import *
+from heapq import heappush, heappop
 
 def neighbours(x, y):
     # No need to check boundary since map is surrounded by walls
@@ -122,7 +122,7 @@ def solve(m, entrances):
                 new_owned = "".join(sorted(set(owned + collected)))
 
                 d_key = (new_current, new_owned)
-                if (not d_key in distances) or new_distance < distances[d_key]:
+                if d_key not in distances or new_distance < distances[d_key]:
                     heappush(h, (new_distance, new_current, new_owned))
                     distances[d_key] = new_distance
 

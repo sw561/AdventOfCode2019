@@ -23,7 +23,7 @@ def construct_deck(fs, nshuffle=1):
     # print("c", composed_f)
     for i in range(n):
         p = composed_f(i)
-        if not deck[p] is None:
+        if deck[p] is not None:
             raise
         deck[p] = i
     return deck
