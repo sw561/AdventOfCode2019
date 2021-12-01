@@ -1,9 +1,14 @@
 #!/usr/bin/env python3
 
 import numpy as np
-import numba
+try:
+    from numba import jit
+except ImportError:
+    # dummy decorator
+    def jit(f):
+        return f
 
-@numba.jit()
+@jit
 def calculate_partial_sums(x, partial):
     for i in range(len(partial)-1):
         partial[i+1] = partial[i] + x[i]
@@ -29,7 +34,7 @@ def plus_indices(base, n):
 def minus_indices(base, n):
     yield from get_index_blocks(base, n, 3, 4)
 
-@numba.jit()
+@jit
 def opt_phase(signal, partial, start, end):
     p_last = partial[-1]
     for i in range(start, end):

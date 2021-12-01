@@ -3,7 +3,13 @@
 import re
 from math import gcd
 import numpy as np
-import numba
+try:
+    from numba import jit
+except ImportError:
+    # dummy decorator
+    def jit(f):
+        return f
+
 
 def lcm(a, b):
     g = gcd(a, b)
@@ -15,7 +21,7 @@ def lcm_iter(it):
         x = lcm(x, i)
     return x
 
-@numba.jit()
+@jit
 def v_diff(a, b):
     if a > b:
         return 1
@@ -24,7 +30,7 @@ def v_diff(a, b):
     else:
         return -1
 
-@numba.jit()
+@jit
 def simulate_1d(positions, t_part1=1000):
     part1 = None
     part2 = None
